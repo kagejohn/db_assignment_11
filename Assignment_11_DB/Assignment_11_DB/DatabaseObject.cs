@@ -14,7 +14,6 @@ namespace Assignment_11_DB
     class Table
     {
         public string Name { get; set; }
-
         public List<Column> Columns { get; } = new List<Column>();
     }
 

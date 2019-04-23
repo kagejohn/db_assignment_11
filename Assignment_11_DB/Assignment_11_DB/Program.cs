@@ -92,7 +92,7 @@ namespace Assignment_11_DB
                 {
                     string columnTypeToLower = column.Type.ToLower();
 
-                    if (column.Name.StartsWith("*"))
+                    if (column.Type.StartsWith("*"))
                     {
                         //then do nothing
                     }
