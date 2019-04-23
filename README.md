@@ -43,3 +43,9 @@ If you are using Windows it is recommended to run the program with the [Git Bash
    ```bash
    $ TODO
    ```
+   
+7. Exercise 2:
+
+   ```bash
+   $ TODO
+   ```
