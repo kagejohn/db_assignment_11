@@ -39,8 +39,13 @@ namespace Assignment_11_DB
             DatabaseObject.Name = jsonObject.schemaName;
 
             ReadJson(jsonObject);
+            Console.WriteLine("Done reading JSON.");
 
             CreateMySql();
+            Console.WriteLine("Done creating MySQL.");
+
+            CreateClass();
+            Console.WriteLine("Done creating the class file.");
         }
 
         static void ReadJson(JsonObject jsonObject)
@@ -151,9 +156,14 @@ namespace Assignment_11_DB
                 }
             }
 
+            CreateFile(DatabaseObject.Name + ".sql", sql);
+        }
+
+        static void CreateFile(string fileNameAndExtension, string textInput)
+        {
             try
             {
-                string filePath = "..\\..\\..\\..\\" + DatabaseObject.Name + ".sql";
+                string filePath = "..\\..\\..\\..\\..\\" + fileNameAndExtension;
                 // Check if file already exists. If yes, delete it.     
                 if (File.Exists(filePath))
                 {
@@ -164,7 +174,7 @@ namespace Assignment_11_DB
                 using (FileStream fs = File.Create(filePath))
                 {
                     // Add some text to file    
-                    Byte[] text = new UTF8Encoding(true).GetBytes(sql);
+                    Byte[] text = new UTF8Encoding(true).GetBytes(textInput);
                     fs.Write(text, 0, text.Length);
                 }
             }
@@ -172,6 +182,59 @@ namespace Assignment_11_DB
             {
                 Console.WriteLine(ex.ToString());
             }
+        }
+
+        static void CreateClass()
+        {
+            string classText = @"using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace ";
+            classText += DatabaseObject.Name + "\n{\n\tclass " + DatabaseObject.Name + "\n\t{\n\t\tpublic string schemaName { get; set; }\n\t\t";
+            classText += "public Entity[] entities { get; set; }\n\t}\n\n";
+            classText += "\tpublic class Entity\n\t{\n";
+
+            foreach (string tableName in DatabaseObject.TableNames)
+            {
+                classText += "\t\tpublic " + tableName + " " + tableName + " { get; set; }\n";
+            }
+
+            classText += "\t}\n\n";
+
+            foreach (Table table in DatabaseObject.Tables)
+            {
+                classText += "\tpublic class " + table.Name + "\n\t{\n";
+
+                foreach (Column column in table.Columns)
+                {
+                    string columnTypeToLower = column.Type.ToLower();
+                    classText += "\t\t";
+
+                    if (DatabaseObject.TableNames.Contains(column.Type))
+                    {
+                        classText += "public " + column.Type + " " + column.Name + " { get; set; }\n";
+                    }
+                    else if (columnTypeToLower == "string")
+                    {
+                        classText += "public string " + column.Name + " { get; set; }\n";
+                    }
+                    else if (columnTypeToLower == "number")
+                    {
+                        classText += "public decimal " + column.Name + " { get; set; }\n";
+                    }
+                    else if (column.Type.StartsWith("*"))
+                    {
+                        classText += "public List<" + column.Type.Substring(1) + "> " + column.Name + " { get; set; }\n";
+                    }
+                }
+
+                classText += "\t}\n\n";
+            }
+
+            classText = classText.Substring(0, classText.Length - 1) + "}";
+
+            CreateFile(DatabaseObject.Name + ".cs", classText);
         }
     }
 }
